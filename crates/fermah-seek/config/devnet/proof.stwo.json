@@ -1,0 +1,67 @@
+{
+  "name": "stwo",
+  "description": "test",
+  "network": "dev",
+  "type": "proof",
+  "config": {
+    "requester": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+    "prover": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://images:3000/stwo_container/stwo_latest.tar.gz",
+            "hash": "0xf4d0e355062308318fa9dd196540dedd556be7e2c195280c82a6409f396c35d8"
+          },
+          "stwo:latest"
+        ]
+      },
+      "inMounts": [],
+      "injector": null,
+      "resultExtractor": {
+        "file": "/output/state.bin"
+      },
+      "entrypoint": ["/bin/prove"],
+      "cmd": [],
+      "envVars": {
+        "STATE_LOCATION": "/output/state.bin"
+      },
+      "networkEnabled": false,
+      "privileged": false
+    },
+    "verifier": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://images:3000/stwo_container/stwo_latest.tar.gz",
+            "hash": "0xf4d0e355062308318fa9dd196540dedd556be7e2c195280c82a6409f396c35d8"
+          },
+          "stwo:latest"
+        ]
+      },
+      "inMounts": [],
+      "resultExtractor": {
+        "negativeExitCode": 58
+      },
+      "injector": {
+        "file": "/output/state.bin"
+      },
+      "entrypoint": ["/bin/verify"],
+      "cmd": [],
+      "envVars": {
+        "STATE_LOCATION": "/output/state.bin"
+      },
+      "networkEnabled": false,
+      "privileged": false
+    },
+    "resourceRequirement": {
+      "minVram": null,
+      "minRam": null,
+      "minSsd": null,
+      "minGpu": [],
+      "minCpuCores": null
+    },
+    "nonce": 217,
+    "callbackUrl": null,
+    "deadline": null
+  }
+}

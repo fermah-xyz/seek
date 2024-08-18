@@ -1,0 +1,70 @@
+{
+  "name": "dummy",
+  "description": "test",
+  "network": "dev",
+  "type": "proof",
+  "config": {
+    "prover": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://localhost:3000/images/dummy_latest.tar.gz",
+            "hash": "0x32eb1a22aa5349993ba4370baecc990457034b9e08bb209cae2c84400e79648c"
+          },
+          "dummy:latest"
+        ]
+      },
+      "inMounts": [],
+      "resultExtractor": {
+        "file": "/output/proof.json"
+      },
+      "entrypoint": ["python"],
+      "cmd": ["main.py"],
+      "envVars": {
+        "TIMEOUT": "20",
+        "PROOF_LOCATION": "/output/proof.json",
+        "PROGRAM": "prover",
+        "ARG_A": "13"
+      },
+      "networkEnabled": false,
+      "privileged": false
+    },
+    "verifier": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://localhost:3000/images/dummy_latest.tar.gz",
+            "hash": "0x32eb1a22aa5349993ba4370baecc990457034b9e08bb209cae2c84400e79648c"
+          },
+          "dummy:latest"
+        ]
+      },
+      "inMounts": [],
+      "resultExtractor": {
+        "negativeExitCode": 58
+      },
+      "injector": {
+        "file": "/output/proof.json"
+      },
+      "entrypoint": ["python"],
+      "cmd": ["main.py"],
+      "envVars": {
+        "ARG_A": "13",
+        "PROOF_LOCATION": "/output/proof.json",
+        "PROGRAM": "verifier"
+      },
+      "networkEnabled": false,
+      "privileged": false
+    },
+    "resourceRequirement": {
+      "minVram": 12884901888,
+      "minSsd": 17179869184,
+      "minRam": 17179869184,
+      "minGpu": ["geForceRtx3060_12GB"],
+      "minCpuCores": 16
+    },
+    "nonce": 217,
+    "callbackUrl": null,
+    "deadline": null
+  }
+}

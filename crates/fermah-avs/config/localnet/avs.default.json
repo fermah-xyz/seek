@@ -1,0 +1,29 @@
+{
+  "name": "default",
+  "description": "Default configuration for the AVS binary.",
+  "network": "local",
+  "type": "avs",
+  "config": {
+    "chainId": 31337,
+    "avsContract": {
+      "operatorStateRetriever": "0x82e01223d51eb87e16a03e24687edf0f294da6f1",
+      "registryCoordinator": "0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9"
+    },
+    "fermahContract": {
+      "disputeManager": "0x998abeb3e57409262ae5b751f60747921b33613e",
+      "serviceManager": "0x95401dc811bb5740090279ba06cfa8fcf6113778",
+      "vault": "0x0e801d84fa97b50751dbf25036d067dcf18858bf",
+      "vaultToken": "0x33791c463b145298c575b4409d52c2bcf743bf67",
+      "whitelist": "0x8f86403a4de0bb5791fa46b8e795c547942fe4cf"
+    },
+    "elContract": {
+      "avsDirectory": "0xa513e6e4b8f2a923d98304ec87f64353c4d5c853",
+      "delegationManager": "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707",
+      "strategyManager": "0x0165878a594ca255338adfa4d48449f69242eb8f",
+      "rewardsCoordinator": "0x7a2088a1bfc9d81c55368ae168c2c02570cb814f",
+      "strategies": {
+        "mockETH": "0xc5a5c42992decbae36851359345fe25997f5c42d"
+      }
+    }
+  }
+}

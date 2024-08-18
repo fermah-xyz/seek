@@ -1,0 +1,36 @@
+{
+  "name": "default",
+  "description": "Default configuration for the AVS binary.",
+  "network": "dev",
+  "type": "avs",
+  "config": {
+    "chainId": 17000,
+    "avsContract": {
+      "operatorStateRetriever": "0x0016901c98ed5f85562daa7e751d7b9ca64292d5",
+      "registryCoordinator": "0xc5b4847ca94f6b9adc5dc880c83638f4828e9d48"
+    },
+    "fermahContract": {
+      "disputeManager": "0x0118abd80cc8895cbd40f5912e8e36c863cc61c1",
+      "serviceManager": "0xd0b35482b25a43f9d0be770225a21db0d2ed65a3",
+      "vault": "0x47d93ea40c7e93eb5f2db09e009fe2e4379444d2",
+      "vaultToken": "0xdeeee805a0a01f6929ff76b97402fd75acc60bd0",
+      "whitelist": "0x78bf543de68ffb5c2fe4c746710a81f689536f11"
+    },
+    "elContract": {
+      "avsDirectory": "0x055733000064333caddbc92763c58bf0192ffebf",
+      "delegationManager": "0xa44151489861fe9e3055d95adc98fbd462b948e7",
+      "strategyManager": "0xdfb5f6ce42aaa7830e94ecfccad411bef4d4d5b6",
+      "rewardsCoordinator": "0xacc1fb458a1317e886db376fc8141540537e68fe",
+      "strategies": {
+        "ETHx": "0x31b6f59e1627cefc9fa174ad03859fc337666af7",
+        "rETH": "0x3a8fbdf9e77dfc25d09741f51d3e181b25d0c4e0",
+        "osETH": "0x46281e3b7fdcacdba44cadf069a94a588fd4c6ef",
+        "frxETH": "0x15f70a41afe34020b3b16079010d3e88c4a85daf",
+        "lsETH": "0x05037a81bd7b4c9e0f7b430f1f2a22c31a2fd943",
+        "cbETH": "0x70eb4d3c164a6b4a5f908d4fbb5a9caffb66bab6",
+        "WETH": "0x80528d6e9a2babfc766965e0e26d5ab08d9cfaf9",
+        "stETH": "0x7d704507b76571a51d9cae8addabbfd0ba0e63d3"
+      }
+    }
+  }
+}

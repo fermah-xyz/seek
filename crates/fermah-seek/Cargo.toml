@@ -1,0 +1,53 @@
+[package]
+name = "fermah-seek"
+description = "Fermah ZK proof seeking."
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+
+authors = ["Fermah Contributors"]
+homepage = "https://fermah.xyz"
+repository = "https://github.com/fermah-xyz/seek"
+documentation = "https://docs.fermah.xyz"
+
+keywords = ["zero-knowledge", "proofs", "crypto", "zk", "avs"]
+categories = ["command-line-utilities"]
+
+license = "MIT OR Apache-2.0"
+
+default-run = "seek"
+
+[features]
+default = ["mint_vault_token"]
+mint_vault_token = ["fermah-avs/mock_vault_token"]
+
+[[bin]]
+name = "seek"
+path = "src/bin/seek.rs"
+
+[dependencies]
+fermah-avs = { workspace = true }
+fermah-config = { workspace = true }
+fermah-common = { workspace = true }
+fermah-rpc = { workspace = true, features = ["client"] }
+fermah-telemetry = { workspace = true, features = ["stdout"] }
+
+anyhow = { workspace = true }
+blake3 = { workspace = true }
+clap = { workspace = true }
+ethers = { workspace = true }
+ethers-contract = { workspace = true }
+const-hex = { workspace = true }
+serde = { workspace = true }
+serde_with = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["macros"] }
+tracing = { workspace = true }
+reqwest = { workspace = true }
+url = { workspace = true }
+
+[build-dependencies]
+anyhow = { workspace = true }
+fermah-common = { workspace = true }
+fermah-config = { workspace = true }
+tokio = { workspace = true, features = ["macros"] }

@@ -1,0 +1,70 @@
+{
+  "name": "default",
+  "description": "test",
+  "network": "local",
+  "type": "proof",
+  "config": {
+    "prover": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://34.67.46.219:3000/images/groth16_prover_latest.tar.gz",
+            "hash": "0xd8c860594e2d99e4f44b4dbc665a0325fee501489c052d33000a90c81b75cad6"
+          },
+          "groth16_prover:latest"
+        ]
+      },
+      "inMounts": [],
+      "injector": null,
+      "resultExtractor": {
+        "file": "/output/state.bin"
+      },
+      "entrypoint": [
+        "/bin/prove"
+      ],
+      "cmd": [],
+      "envVars": {
+        "STATE_LOCATION": "/output/state.bin"
+      },
+      "networkEnabled": false,
+      "privileged": false
+    },
+    "verifier": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://34.67.46.219:3000/images/groth16_prover_latest.tar.gz",
+            "hash": "0xd8c860594e2d99e4f44b4dbc665a0325fee501489c052d33000a90c81b75cad6"
+          },
+          "groth16_prover:latest"
+        ]
+      },
+      "inMounts": [],
+      "resultExtractor": {
+        "negativeExitCode": 58
+      },
+      "injector": {
+        "file": "/output/state.bin"
+      },
+      "entrypoint": [
+        "/bin/verify"
+      ],
+      "cmd": [],
+      "envVars": {
+        "STATE_LOCATION": "/output/state.bin"
+      },
+      "networkEnabled": false,
+      "privileged": false
+    },
+    "resourceRequirement": {
+      "minVram": null,
+      "minRam": null,
+      "minSsd": null,
+      "minGpu": [],
+      "minCpuCores": 2
+    },
+    "nonce": 217,
+    "callbackUrl": null,
+    "deadline": null
+  }
+}

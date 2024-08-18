@@ -1,0 +1,31 @@
+[package]
+name = "fermah-config"
+description = "Fermah configuration profiles utility."
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+
+authors = ["Fermah Contributors"]
+homepage = "https://fermah.xyz"
+repository = "https://github.com/fermah-xyz/seek"
+documentation = "https://docs.fermah.xyz"
+
+keywords = ["zero-knowledge", "proofs", "crypto", "zk", "avs"]
+categories = ["command-line-utilities"]
+
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+fermah-common = { workspace = true }
+
+clap = { workspace = true }
+const-hex = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+strum = { workspace = true }
+thiserror = { workspace = true }
+termion = { workspace = true }
+rand_core = { workspace = true }
+uuid = { workspace = true }
