@@ -1,0 +1,79 @@
+{
+  "name": "inception",
+  "description": "test",
+  "network": "local",
+  "type": "proof",
+  "config": {
+    "prover": {
+      "image": {
+        "docker": "inception:latest"
+      },
+      "inMounts": [
+        {
+          "source": {
+            "file": {
+              "url": "http://host.docker.internal:8082/a.txt",
+              "hash": "0xb3372b584dc0df6ce757fa43f459ca1f0c4180a08762cbfa41d022ca24f63d9f"
+            }
+          },
+          "target": "/input/a.txt",
+          "temporary": true
+        }
+      ],
+      "resultExtractor": {
+        "file": "/output/result.txt"
+      },
+      "entrypoint": ["python3"],
+      "cmd": ["main.py"],
+      "envVars": {
+        "PROOF_LOCATION": "/output/result.txt",
+        "PROGRAM": "prover"
+      },
+      "networkEnabled": false,
+      "privileged": false,
+      "dockerAccess": true
+    },
+    "verifier": {
+      "image": {
+        "docker": "inception:latest"
+      },
+      "inMounts": [
+        {
+          "source": {
+            "file": {
+              "url": "http://127.0.0.1:8082/a.txt",
+              "hash": "0xb3372b584dc0df6ce757fa43f459ca1f0c4180a08762cbfa41d022ca24f63d9f"
+            }
+          },
+          "target": "/input/a.txt",
+          "temporary": true
+        }
+      ],
+      "resultExtractor": {
+        "negativeExitCode": 58
+      },
+      "injector": {
+        "file": "/output/result.txt"
+      },
+      "entrypoint": ["python3"],
+      "cmd": ["main.py"],
+      "envVars": {
+        "PROOF_LOCATION": "/output/result.txt",
+        "PROGRAM": "verifier"
+      },
+      "networkEnabled": false,
+      "privileged": false,
+      "dockerAccess": true
+    },
+    "resourceRequirement": {
+      "minVram": null,
+      "minSsd": null,
+      "minRam": null,
+      "minGpu": [],
+      "minCpuCores": null
+    },
+    "nonce": 1,
+    "callbackUrl": null,
+    "deadline": null
+  }
+}

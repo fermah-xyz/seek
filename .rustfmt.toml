@@ -1,0 +1,45 @@
+edition = "2021"
+newline_style = "Unix"
+
+# let a = Foo { x: x, y: y, z: z };
+# ->
+# let a = Foo { x, y, z };
+use_field_init_shorthand = true
+
+
+# # # # # Nightly Channel Features # # # # #
+
+# Discard existing import groups, and create three groups for:
+# std, core and alloc,
+# external crates,
+# self, super and crate imports.
+group_imports = "StdExternalCrate"
+
+
+# Use horizontal if space is available, else use vertical
+# use foo::{xxxxxxxxxxxxxxxxxx, yyyyyyyyyyyyyyyyyy, zzzzzzzzzzzzzzzzzz};
+# use foo::{
+#     aaaaaaaaaaaaaaaaaa,
+#     bbbbbbbbbbbbbbbbbb,
+#     cccccccccccccccccc,
+#     dddddddddddddddddd,
+#     eeeeeeeeeeeeeeeeee,
+#     ffffffffffffffffff,
+# };
+imports_layout = "HorizontalVertical"
+
+
+# Merge imports from the same crate into a single use statement.
+# Conversely, imports from different crates are split into separate statements.
+# use foo::{
+#    a, b,
+#    b::{f, g},
+#    c,
+#    d::e,
+# };
+# use qux::{h, i};
+imports_granularity = "Crate"
+
+
+# Force multiline closure and match arm bodies to be wrapped in a block
+force_multiline_blocks = true
