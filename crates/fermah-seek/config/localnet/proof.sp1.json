@@ -1,0 +1,69 @@
+{
+  "name": "sp1",
+  "description": "test",
+  "network": "local",
+  "type": "proof",
+  "config": {
+    "requester": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+    "prover": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://images:3000/sp1_container/sp1_latest.tar.gz",
+            "hash": "0xe242d51a2de363e22cfc3bf16e68374f9d2dca3c81682e537fd06ce5f8ce8283"
+          },
+          "sp1:latest"
+        ]
+      },
+      "inMounts": [],
+      "injector": null,
+      "resultExtractor": {
+        "file": "/output/state.bin"
+      },
+      "entrypoint": ["/usr/local/bin/entrypoint.sh"],
+      "cmd": ["/bin/prove"],
+      "envVars": {
+        "STATE_LOCATION": "/output/state.bin"
+      },
+      "networkEnabled": true,
+      "privileged": true,
+      "dockerAccess": true
+    },
+    "verifier": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://images:3000/sp1_container/sp1_latest.tar.gz",
+            "hash": "0xe242d51a2de363e22cfc3bf16e68374f9d2dca3c81682e537fd06ce5f8ce8283"
+          },
+          "sp1:latest"
+        ]
+      },
+      "inMounts": [],
+      "resultExtractor": {
+        "negativeExitCode": 58
+      },
+      "injector": {
+        "file": "/output/state.bin"
+      },
+      "entrypoint": ["/usr/local/bin/entrypoint.sh"],
+      "cmd": ["/bin/verify"],
+      "envVars": {
+        "STATE_LOCATION": "/output/state.bin"
+      },
+      "networkEnabled": true,
+      "privileged": true,
+      "dockerAccess": true
+    },
+    "resourceRequirement": {
+      "minVram": null,
+      "minRam": null,
+      "minSsd": null,
+      "minGpu": [],
+      "minCpuCores": null
+    },
+    "nonce": 217,
+    "callbackUrl": null,
+    "deadline": null
+  }
+}

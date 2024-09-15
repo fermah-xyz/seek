@@ -1,0 +1,13 @@
+{
+  "name": "otlp",
+  "description": "OTLP telemetry with export capabilities.",
+  "network": "dev",
+  "type": "telemetry",
+  "config": {
+    "export": {
+      "endpoint": "http://localhost:4317",
+      "timeoutSecs": 3
+    },
+    "filter": "info,ethers=debug"
+  }
+}

@@ -1,0 +1,53 @@
+[package]
+name = "fermah-telemetry"
+description = "Fermah telemetry tracing and metrics."
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+
+authors = ["Fermah Contributors"]
+homepage = "https://fermah.xyz"
+repository = "https://github.com/fermah-xyz/seek"
+documentation = "https://docs.fermah.xyz"
+
+keywords = ["zero-knowledge", "proofs", "crypto", "zk", "avs"]
+categories = ["command-line-utilities"]
+
+license = "MIT OR Apache-2.0"
+
+[features]
+default = ["stdout", "tracing"]
+stdout = []
+tracing = ["stdout", "dep:uuid", "dep:opentelemetry", "dep:tracing-opentelemetry", "dep:opentelemetry-appender-tracing", "dep:opentelemetry-otlp", "dep:opentelemetry_sdk", "dep:opentelemetry-stdout", "dep:opentelemetry-resource-detectors", "dep:opentelemetry-semantic-conventions"]
+
+[dependencies]
+fermah-common = { workspace = true }
+fermah-config = { workspace = true }
+
+# External Deps
+tracing = { workspace = true }
+serde = { workspace = true }
+uuid = { workspace = true, optional = true }
+
+opentelemetry = { workspace = true, optional = true }
+
+tracing-subscriber = { workspace = true }
+
+tracing-opentelemetry = { version = "0.24.0", optional = true }
+
+opentelemetry-appender-tracing = { version = "0.4.0", optional = true, features = ["logs_level_enabled"] }
+opentelemetry-otlp = { version = "0.16.0", optional = true, features = ["default", "metrics", "logs", "serialize"] }
+opentelemetry_sdk = { version = "0.23.0", optional = true, features = ["async-std", "rt-tokio", "metrics", "logs", "logs_level_enabled"] }
+opentelemetry-stdout = { version = "0.4.0", optional = true }
+
+opentelemetry-resource-detectors = { version = "0.2.0", optional = true }
+opentelemetry-semantic-conventions = { version = "0.15.0", optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros"] }
+
+[build-dependencies]
+anyhow = { workspace = true }
+fermah-common = { workspace = true }
+fermah-config = { workspace = true }
+tokio = { workspace = true, features = ["macros"] }

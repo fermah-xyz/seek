@@ -1,0 +1,102 @@
+name: Rust
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  SCCACHE_MEMCACHED_EXPIRATION: 0
+  RUSTC_WRAPPER: "sccache"
+  RUSTFLAGS: "-C link-arg=-fuse-ld=lld"
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.5
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.7.3
+
+      - name: Install lld
+        run: sudo apt-get install lld
+
+      - name: Start postgresql
+        run: |
+          sudo apt-get -y install postgresql
+          sudo systemctl start postgresql.service
+          sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
+      - name: Install diesel-cli
+        run: |
+          sudo apt-get -y install libssl-dev libpq-dev
+          cargo install diesel_cli --no-default-features --features postgres
+          diesel migration run --database-url "postgres://postgres:postgres@127.0.0.1/postgres" --migration-dir migrations
+
+      - name: Build
+        run: cargo build --workspace
+      - name: Test
+        run: cargo test --workspace --all-targets --all-features
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt
+          profile: minimal
+
+      - name: Format
+        run: cargo +nightly fmt --all -- --check
+
+  clippy:
+    name: Lint
+    runs-on: self-hosted
+    env:
+      SCCACHE_MEMCACHED_ENDPOINT: "tcp://localhost:11211"
+      SCCACHE_MEMCACHED_KEY_PREFIX: "lint-${{ github.head_ref || github.ref_name }}"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.5
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.7.3
+
+      - name: Install lld
+        run: sudo apt-get -y install lld
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features --workspace -- -D warnings

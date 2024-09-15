@@ -1,0 +1,69 @@
+{
+  "name": "valida",
+  "description": "test",
+  "network": "local",
+  "type": "proof",
+  "config": {
+    "requester": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+    "prover": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://localhost:3000/images/valida_latest.tar.gz",
+            "hash": "0xe29a6baea9d91785e5b8c61de72f41d70da929bf74caafa618130982d6c3229a"
+          },
+          "valida:latest"
+        ]
+      },
+      "inMounts": [],
+      "injector": null,
+      "resultExtractor": {
+        "file": "/output/compressed.7z"
+      },
+      "entrypoint": ["/valida/prove"],
+      "cmd": [],
+      "envVars": {
+        "STATE_LOCATION": "/output/compressed.7z"
+      },
+      "networkEnabled": false,
+      "privileged": false,
+      "dockerAccess": false
+    },
+    "verifier": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://localhost:3000/images/valida_latest.tar.gz",
+            "hash": "0xe29a6baea9d91785e5b8c61de72f41d70da929bf74caafa618130982d6c3229a"
+          },
+          "valida:latest"
+        ]
+      },
+      "inMounts": [],
+      "resultExtractor": {
+        "negativeExitCode": 58
+      },
+      "injector": {
+        "file": "/output/compressed.7z"
+      },
+      "entrypoint": ["/valida/verify"],
+      "cmd": [],
+      "envVars": {
+        "STATE_LOCATION": "/output/compressed.7z"
+      },
+      "networkEnabled": false,
+      "privileged": false,
+      "dockerAccess": false
+    },
+    "resourceRequirement": {
+      "minVram": null,
+      "minSsd": null,
+      "minRam": null,
+      "minGpu": [],
+      "minCpuCores": 2
+    },
+    "nonce": 217,
+    "callbackUrl": null,
+    "deadline": null
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "name": "dummy_docker",
+  "description": "test",
+  "network": "local",
+  "type": "proof",
+  "config": {
+    "prover": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://host.docker.internal:8082/dummy_docker_latest.tar.gz",
+            "hash": "0xf9e2e55c0d177c5183c93c620505b5dfdedf67a7c13f2c70ec4df84e5251d105"
+          },
+          "dummy_docker:latest"
+        ]
+      },
+      "inMounts": [
+        {
+          "source": {
+            "file": {
+              "url": "http://host.docker.internal:8082/arg.json",
+              "hash": "0x7756bcc6778d826cb865f87b49f03c8bcc4357b34f03a8a4251939b2c2458286"
+            }
+          },
+          "target": "/input/arg.json",
+          "temporary": true
+        }
+      ],
+      "resultExtractor": {
+        "file": "/output/proof.json"
+      },
+      "entrypoint": ["python"],
+      "cmd": ["main.py"],
+      "envVars": {
+        "TIMEOUT": "13",
+        "PROOF_LOCATION": "/output/proof.json",
+        "PROGRAM": "prover",
+        "ARG_LOCATION": "/input/arg.json"
+      },
+      "networkEnabled": false,
+      "privileged": false,
+      "dockerAccess": true
+    },
+    "verifier": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://127.0.0.1:8082/dummy_docker_latest.tar.gz",
+            "hash": "0xf9e2e55c0d177c5183c93c620505b5dfdedf67a7c13f2c70ec4df84e5251d105"
+          },
+          "dummy_docker:latest"
+        ]
+      },
+      "inMounts": [],
+      "resultExtractor": {
+        "negativeExitCode": 58
+      },
+      "injector": {
+        "file": "/output/proof.json"
+      },
+      "entrypoint": ["python"],
+      "cmd": ["main.py"],
+      "envVars": {
+        "ARG_A": "30",
+        "PROOF_LOCATION": "/output/proof.json",
+        "PROGRAM": "verifier"
+      },
+      "networkEnabled": false,
+      "privileged": false,
+      "dockerAccess": true
+    },
+    "resourceRequirement": {
+      "minVram": null,
+      "minSsd": null,
+      "minRam": null,
+      "minGpu": [],
+      "minCpuCores": null
+    },
+    "nonce": 1,
+    "callbackUrl": null,
+    "deadline": null
+  }
+}
