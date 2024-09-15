@@ -1,0 +1,45 @@
+[package]
+name = "fermah-rpc"
+description = "Fermah RPC client/server."
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+
+authors = ["Fermah Contributors"]
+homepage = "https://fermah.xyz"
+repository = "https://github.com/fermah-xyz/seek"
+documentation = "https://docs.fermah.xyz"
+
+keywords = ["zero-knowledge", "proofs", "crypto", "zk", "avs"]
+categories = ["command-line-utilities"]
+
+license = "MIT OR Apache-2.0"
+
+[features]
+default = ["client"]
+client = []
+server = ["db"]
+db = ["dep:fermah-database"]
+
+[dependencies]
+fermah-database = { workspace = true, optional = true }
+fermah-telemetry = { workspace = true }
+fermah-common = { workspace = true }
+
+# External dependencies
+tokio = { workspace = true }
+clap.workspace = true
+serde.workspace = true
+opentelemetry = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+ethers = { workspace = true }
+const-hex = { workspace = true }
+anyhow = { workspace = true }
+blake3 = { workspace = true }
+rand = { workspace = true }
+reqwest = { workspace = true }
+futures-util = { workspace = true }
+tempfile = { workspace = true }
+
+jsonrpsee = { version = "0.24.0", features = ["full"] }

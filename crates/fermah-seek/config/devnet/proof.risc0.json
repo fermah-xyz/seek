@@ -1,0 +1,68 @@
+{
+  "name": "risc0",
+  "description": "test",
+  "network": "dev",
+  "type": "proof",
+  "config": {
+    "prover": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://localhost:3000/images/risc0_latest.tar.gz",
+            "hash": "0x605a357d475a666f770119fa53d04a40de468758f2a6805b9732196e7a1aa08a"
+          },
+          "risc0:latest"
+        ]
+      },
+      "inMounts": [],
+      "injector": null,
+      "resultExtractor": {
+        "file": "/output/state.bin"
+      },
+      "entrypoint": ["/bin/prove"],
+      "cmd": [],
+      "envVars": {
+        "STATE_LOCATION": "/output/state.bin"
+      },
+      "networkEnabled": false,
+      "privileged": false,
+      "dockerAccess": false
+    },
+    "verifier": {
+      "image": {
+        "remoteDocker": [
+          {
+            "url": "http://localhost:3000/images/risc0_latest.tar.gz",
+            "hash": "0x605a357d475a666f770119fa53d04a40de468758f2a6805b9732196e7a1aa08a"
+          },
+          "risc0:latest"
+        ]
+      },
+      "inMounts": [],
+      "resultExtractor": {
+        "negativeExitCode": 58
+      },
+      "injector": {
+        "file": "/output/state.bin"
+      },
+      "entrypoint": ["/bin/verify"],
+      "cmd": [],
+      "envVars": {
+        "STATE_LOCATION": "/output/state.bin"
+      },
+      "networkEnabled": false,
+      "privileged": false,
+      "dockerAccess": false
+    },
+    "resourceRequirement": {
+      "minVram": null,
+      "minRam": null,
+      "minSsd": null,
+      "minGpu": [],
+      "minCpuCores": 2
+    },
+    "nonce": 217,
+    "callbackUrl": null,
+    "deadline": null
+  }
+}
