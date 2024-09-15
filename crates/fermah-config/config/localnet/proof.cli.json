@@ -1,0 +1,10 @@
+{
+  "name": "cli",
+  "description": "test",
+  "network": "local",
+  "type": "proof",
+  "config": {
+    "data": "new",
+    "advancedData": "test"
+  }
+}
