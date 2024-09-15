@@ -24,7 +24,7 @@ fermah-avs = { path = "crates/fermah-avs", version = "0.1.0" }
 fermah-config = { path = "crates/fermah-config", version = "0.1.0" }
 fermah-common = { path = "crates/fermah-common", version = "0.1.0" }
 fermah-database = { path = "crates/fermah-database", version = "0.1.0" }
-fermah-seek = { path = "crates/fermah-seek", version = "0.1.0" }
+fermah-seek = { path = "crates/fermah-seek", version = "0.1.2" }
 fermah-rpc = { path = "crates/fermah-rpc", version = "0.1.0" }
 fermah-telemetry = { path = "crates/fermah-telemetry", version = "0.1.0" }
 
