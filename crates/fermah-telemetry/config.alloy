@@ -1,0 +1,104 @@
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+otelcol.receiver.otlp "default" {
+	grpc { }
+
+	output {
+		metrics = [otelcol.processor.resourcedetection.default.input]
+		logs    = [otelcol.processor.resourcedetection.default.input]
+		traces  = [otelcol.processor.resourcedetection.default.input]
+	}
+}
+
+otelcol.processor.resourcedetection "default" {
+	detectors = ["env", "system", "ec2"]
+
+	system {
+		hostname_sources = ["os"]
+	}
+
+	output {
+		metrics = [otelcol.processor.transform.add_resource_attributes_as_metric_attributes.input]
+		logs    = [otelcol.processor.batch.default.input]
+		traces  = [
+			otelcol.processor.batch.default.input,
+			otelcol.connector.host_info.default.input,
+		]
+	}
+}
+
+otelcol.connector.host_info "default" {
+	host_identifiers = ["host.name"]
+
+	output {
+		metrics = [otelcol.processor.batch.default.input]
+	}
+}
+
+otelcol.processor.transform "add_resource_attributes_as_metric_attributes" {
+	error_mode = "ignore"
+
+	metric_statements {
+		context    = "datapoint"
+		statements = [
+			"set(attributes[\"deployment.environment\"], resource.attributes[\"deployment.environment\"])",
+			"set(attributes[\"service.version\"], resource.attributes[\"service.version\"])",
+		]
+	}
+
+	output {
+		metrics = [otelcol.processor.batch.default.input]
+	}
+}
+
+otelcol.processor.batch "default" {
+	output {
+		metrics = [otelcol.exporter.prometheus.metrics_service.input]
+		logs    = [otelcol.exporter.loki.logs_service.input]
+		traces  = [otelcol.exporter.otlp.grafana_cloud_tempo.input]
+	}
+}
+
+otelcol.exporter.prometheus "metrics_service" {
+	add_metric_suffixes = false
+	forward_to          = [prometheus.remote_write.default.receiver]
+}
+
+otelcol.exporter.loki "logs_service" {
+	forward_to          = [loki.write.default.receiver]
+}
+
+otelcol.exporter.otlp "grafana_cloud_tempo" {
+	client {
+		endpoint = "tempo-prod-04-prod-us-east-0.grafana.net:443"
+		auth     = otelcol.auth.basic.grafana_cloud_tempo.handler
+	}
+}
+
+otelcol.auth.basic "grafana_cloud_tempo" {
+	username = "863733"
+	password = env("GRAFANA_CLOUD_API_KEY")
+}
+
+loki.write "default" {
+    endpoint {
+        url = "https://logs-prod-006.grafana.net/loki/api/v1/push"
+        basic_auth {
+            username = "869417"
+            password = env("GRAFANA_CLOUD_API_KEY")
+        }
+    }
+}
+
+prometheus.remote_write "default" {
+  endpoint {
+    url = "https://prometheus-prod-13-prod-us-east-0.grafana.net/api/prom/push"
+      basic_auth {
+        username = "1537843"
+        password = env("GRAFANA_CLOUD_API_KEY")
+      }
+  }
+}
