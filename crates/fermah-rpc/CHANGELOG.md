@@ -9,4 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0](https://github.com/fermah-xyz/seek/releases/tag/fermah-rpc-v0.1.0) - 2024-09-16
 
 ### Other
+
+- added changelog
+- Initial commit.
+
+## [0.1.0](https://github.com/fermah-xyz/seek/releases/tag/fermah-rpc-v0.1.0) - 2024-09-16
+
+### Other
 - Initial commit.
