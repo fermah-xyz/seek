@@ -8,10 +8,7 @@ use super::erc20::ERC20Mock;
 use super::erc20::IERC20;
 use crate::{config::Config, SignerMiddlewareContract};
 
-abigen!(
-    IStrategy,
-    "contracts/out/IStrategy.sol/IStrategy.json"
-);
+abigen!(IStrategy, "contracts/out/IStrategy.sol/IStrategy.json");
 
 #[derive(Debug, Clone)]
 pub struct Strategies {

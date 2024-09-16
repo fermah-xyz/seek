@@ -20,10 +20,7 @@ abigen!(
 
 abigen!(Vault, "contracts/out/Vault.sol/Vault.json");
 
-abigen!(
-    Whitelist,
-    "contracts/out/Whitelist.sol/Whitelist.json"
-);
+abigen!(Whitelist, "contracts/out/Whitelist.sol/Whitelist.json");
 
 #[derive(Debug, Clone)]
 pub struct FermahContracts {
