@@ -1,0 +1,16 @@
+/target
+# IDEs
+.vscode/
+.idea/
+
+# Cargo
+target/
+
+# Databases
+.*.db
+
+# MacOS
+.DS_Store
+
+# Environment
+.env

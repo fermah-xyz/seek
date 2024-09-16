@@ -1,0 +1,53 @@
+[package]
+name = "fermah-avs"
+description = "Fermah AVS."
+version = "0.1.2"
+edition.workspace = true
+rust-version.workspace = true
+
+authors = ["Fermah Contributors"]
+homepage = "https://fermah.xyz"
+repository = "https://github.com/fermah-xyz/seek"
+documentation = "https://docs.fermah.xyz"
+
+keywords = ["zero-knowledge", "proofs", "crypto", "zk", "avs"]
+categories = ["command-line-utilities"]
+
+license = "MIT OR Apache-2.0"
+
+[features]
+default = ["dev"]
+dev = ["mock_strategy", "mock_vault_token"]
+
+# This feature allows AVS to connect to internal db. It is only used in MM, so it is optional, and MM
+# will turn it on themselves
+db = ["dep:fermah-database"]
+
+mock_strategy = []
+mock_vault_token = []
+
+[dependencies]
+# Internal dependencies
+fermah-telemetry = { workspace = true }
+fermah-common = { workspace = true }
+fermah-config = { workspace = true }
+fermah-database = { workspace = true, optional = true }
+
+# External dependenices
+const-hex = { workspace = true }
+tokio = { workspace = true }
+ethers = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+bincode = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+url = { workspace = true }
+
+[build-dependencies]
+anyhow = { workspace = true }
+fermah-common = { workspace = true }
+fermah-config = { workspace = true }
+tokio = { workspace = true, features = ["macros"] }

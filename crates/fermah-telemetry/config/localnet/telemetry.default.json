@@ -1,0 +1,10 @@
+{
+  "name": "default",
+  "description": "Default telemetry with no export capabilities.",
+  "network": "local",
+  "type": "telemetry",
+  "config": {
+    "export": null,
+    "filter": "info,ethers=debug"
+  }
+}
