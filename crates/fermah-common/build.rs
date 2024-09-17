@@ -12,4 +12,5 @@ fn main() -> Result<()> {
         .add_instructions(&build)?
         .add_instructions(&rustc)?
         .emit()
+    Ok(())
 }
