@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/fermah-xyz/seek/compare/fermah-common-v0.1.2...fermah-common-v0.2.0) - 2024-10-04
+
+### Fixed
+
+- *(config)* el keystore compatibility
+
 ## [0.1.2](https://github.com/fermah-xyz/seek/releases/tag/fermah-common-v0.1.2) - 2024-09-16
 
 ### Other
