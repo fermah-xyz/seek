@@ -24,7 +24,7 @@
       "envVars": {
         "STATE_LOCATION": "/output/state.bin"
       },
-      "networkEnabled": false,
+      "networkEnabled": true,
       "privileged": false,
       "dockerAccess": false
     },
@@ -50,7 +50,7 @@
       "envVars": {
         "STATE_LOCATION": "/output/state.bin"
       },
-      "networkEnabled": false,
+      "networkEnabled": true,
       "privileged": false,
       "dockerAccess": false
     },

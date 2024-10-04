@@ -7,6 +7,7 @@ use ctr::{
 };
 use rand_core::{OsRng, RngCore};
 use serde::{Deserialize, Serialize};
+use tracing::warn;
 use zeroize::ZeroizeOnDrop;
 
 use crate::{
@@ -71,11 +72,16 @@ impl<KDF: Kdf> Aes128CtrCipher<KDF> {
         }
     }
 
-    pub fn from_data(data: Vec<u8>) -> Self {
+    pub fn from_data(data: Vec<u8>, fast: bool) -> Self {
         let mut iv = [0u8; AES128CTR_KEY_LEN];
         OsRng.fill_bytes(&mut iv);
 
-        let kdf = KDF::fast(&mut OsRng);
+        let kdf = fast
+            .then(|| {
+                warn!("cipher KDF fast mode enabled! this is insecure, do not use in production");
+                KDF::fast(&mut OsRng)
+            })
+            .unwrap_or_else(|| KDF::secure(&mut OsRng));
 
         Self {
             name: Self::NAME.to_string(),
@@ -124,12 +130,18 @@ impl<KDF: Kdf> Cipher for Aes128CtrCipher<KDF> {
         let cipher_key = self.derive_key(password)?;
         Self::apply_xor(
             self.params.iv.as_slice(),
-            cipher_key[AES128CTR_KEY_LEN..].try_into().unwrap(),
+            cipher_key[..AES128CTR_KEY_LEN].try_into().unwrap(),
             self.data.as_mut_slice(),
         );
 
         let mut hasher = Keccak256Hasher::new();
-        hasher.update(&[&cipher_key[..AES128CTR_KEY_LEN], self.data.as_slice()].concat());
+        hasher.update(
+            &[
+                &cipher_key[AES128CTR_KEY_LEN..AES128CTR_KDF_LEN],
+                self.data.as_slice(),
+            ]
+            .concat(),
+        );
 
         self.mac = hasher.finalize().as_ref().to_vec();
         Ok(())
@@ -139,12 +151,18 @@ impl<KDF: Kdf> Cipher for Aes128CtrCipher<KDF> {
         let cipher_key = self.derive_key(password)?;
 
         let mut hasher = Keccak256Hasher::new();
-        hasher.update(&[&cipher_key[..AES128CTR_KEY_LEN], self.data.as_slice()].concat());
+        hasher.update(
+            &[
+                &cipher_key[AES128CTR_KEY_LEN..AES128CTR_KDF_LEN],
+                self.data.as_slice(),
+            ]
+            .concat(),
+        );
         let mac = hasher.finalize().as_ref().to_vec();
 
         Self::apply_xor(
             self.params.iv.as_slice(),
-            cipher_key[AES128CTR_KEY_LEN..].try_into().unwrap(),
+            cipher_key[..AES128CTR_KEY_LEN].try_into().unwrap(),
             self.data.as_mut_slice(),
         );
 
@@ -192,12 +210,12 @@ mod tests {
 
         assert_eq!(
             cipher.mac.encode_hex_with_prefix(),
-            "0x23794f1d87125fc940c82a5347adb515d2ed330d6cf71567928f9ca0ace9636a".to_string()
+            "0x63748fdab0603b17be14ed1b753e5a00588cf2ad684bc899bb17ab74cf8fc95a".to_string()
         );
 
         assert_eq!(
             cipher.data.encode_hex_with_prefix(),
-            "0x73816f0069e31beddacaeab5ecfb98bd".to_string()
+            "0x898535671969a137fcd2c5194018ca95".to_string()
         );
 
         cipher.decrypt(password.as_bytes()).unwrap();

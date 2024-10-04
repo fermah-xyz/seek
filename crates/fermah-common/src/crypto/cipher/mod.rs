@@ -1,5 +1,4 @@
 pub mod aes128ctr;
-pub mod plain;
 
 use aes::cipher::{BlockCipher, BlockEncryptMut};
 use ctr::cipher::StreamCipher;

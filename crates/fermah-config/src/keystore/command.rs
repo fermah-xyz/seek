@@ -9,7 +9,7 @@ use fermah_common::{
         spinner::{Spinner, SpinnerTemplate},
     },
     crypto::{
-        cipher::{aes128ctr::Aes128CtrCipher, plain::PlainCipher, Cipher},
+        cipher::{aes128ctr::Aes128CtrCipher, Cipher},
         kdf::scrypt::ScryptKdf,
         keystore::{KeystoreCipher, KeystoreFile, KEYS_DIR},
         signer::{bls::BlsSigner, ecdsa::EcdsaSigner, Signer, SignerType},
@@ -60,17 +60,31 @@ impl KeyCommands {
                     .unwrap_or_else(|_| args.private_key.clone());
 
                 match args.key_type {
-                    SignerType::Ecdsa => {
+                    SignerType::ECDSA => {
                         let (address, private_key) =
                             Self::get_keypair::<EcdsaSigner>(Vec::from_hex(key_data.trim())?)?;
-                        Self::save_keys(&keys_dir, private_key, address, name.as_str(), &args.pw)
-                            .await?;
+                        Self::save_keys(
+                            name,
+                            &keys_dir,
+                            private_key,
+                            address,
+                            &args.pw,
+                            args.pw.fast,
+                        )
+                        .await?;
                     }
                     SignerType::BLS => {
                         let (address, private_key) =
                             Self::get_keypair::<BlsSigner>(Vec::from_hex(key_data.trim())?)?;
-                        Self::save_keys(&keys_dir, private_key, address, name.as_str(), &args.pw)
-                            .await?;
+                        Self::save_keys(
+                            name,
+                            &keys_dir,
+                            private_key,
+                            address,
+                            &args.pw,
+                            args.pw.fast,
+                        )
+                        .await?;
                     }
                 }
 
@@ -80,13 +94,13 @@ impl KeyCommands {
                 info!(?key_type, "generating");
 
                 match key_type {
-                    SignerType::Ecdsa => {
+                    SignerType::ECDSA => {
                         let (address, private_key) = Self::get_random_keypair::<EcdsaSigner>()?;
-                        Self::save_keys(&keys_dir, private_key, address, name.as_str(), pw).await?;
+                        Self::save_keys(name, &keys_dir, private_key, address, pw, pw.fast).await?;
                     }
                     SignerType::BLS => {
                         let (address, private_key) = Self::get_random_keypair::<BlsSigner>()?;
-                        Self::save_keys(&keys_dir, private_key, address, name.as_str(), pw).await?;
+                        Self::save_keys(name, &keys_dir, private_key, address, pw, pw.fast).await?;
                     }
                 }
 
@@ -112,14 +126,15 @@ impl KeyCommands {
     }
 
     async fn save_keys(
+        name: &str,
         keys_dir: &Path,
         private_key: Vec<u8>,
         address: Vec<u8>,
-        name: &str,
         pw_args: &PasswordArgs,
+        fast: bool,
     ) -> Result<(), Error> {
         let uuid = Uuid::new_v4();
-        let key_file = keys_dir.join(format!("{}.json", name));
+        let key_file = keys_dir.join(format!("{}.key.json", name));
 
         if key_file.exists() {
             return Err(Error::KeystoreExists(
@@ -140,43 +155,21 @@ impl KeyCommands {
             }
         };
 
-        match password.is_empty() {
-            false => {
-                let mut cipher = Aes128CtrCipher::<ScryptKdf>::from_data(private_key);
+        let mut cipher = Aes128CtrCipher::<ScryptKdf>::from_data(private_key, fast);
 
-                let spinner = Spinner::new(1, "🔒 Encrypting", SpinnerTemplate::Default);
+        let spinner = Spinner::new(1, "🔒 Encrypting", SpinnerTemplate::Default);
 
-                cipher.encrypt(password.as_bytes()).unwrap();
+        cipher.encrypt(password.as_bytes()).unwrap();
 
-                spinner.finish("Done!", true);
+        spinner.finish("Done!", true);
 
-                let keystore = KeystoreCipher::new(cipher, address.clone(), uuid, name.to_string());
-                info!(?key_file, "saving encrypted private");
+        let cipher = KeystoreCipher::new(cipher, address.clone(), uuid);
+        info!(?key_file, "saving encrypted private key");
 
-                KeystoreFile::Encrypted(keystore)
-                    .to_json_path(&key_file)
-                    .await?;
+        KeystoreFile { cipher }.to_json_path(&key_file).await?;
 
-                print_var("file", key_file.display());
-                print_var("address", address.encode_hex_with_prefix());
-            }
-            true => {
-                let keystore = KeystoreCipher::new(
-                    PlainCipher::new(private_key),
-                    address.clone(),
-                    uuid,
-                    name.to_string(),
-                );
-                info!(?key_file, "saving plaintext private");
-
-                KeystoreFile::Plain(keystore)
-                    .to_json_path(&key_file)
-                    .await?;
-
-                print_var("file", key_file.display());
-                print_var("address", address.encode_hex_with_prefix());
-            }
-        }
+        print_var("file", key_file.display());
+        print_var("address", address.encode_hex_with_prefix());
         Ok(())
     }
 

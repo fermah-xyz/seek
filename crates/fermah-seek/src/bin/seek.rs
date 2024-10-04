@@ -1,19 +1,20 @@
+#[cfg(feature = "send_proof_requests")]
+use std::path::PathBuf;
 use std::{ops::Add, path::Path};
 
 use anyhow::Context;
 use clap::Parser;
 use const_hex::{traits::FromHex, ToHexExt};
 use fermah_avs::contract::Contracts;
+#[cfg(feature = "mint_vault_token")]
+use fermah_common::crypto::keystore::KeystoreConfig;
 use fermah_common::{
     cli,
     cli::{
         prompts::print_var,
         spinner::{Spinner, SpinnerLayer, SpinnerTemplate},
     },
-    crypto::{
-        keystore::{KeystoreConfig, KeystoreFile},
-        signer::ecdsa::EcdsaSigner,
-    },
+    crypto::{keystore::KeystoreFile, signer::ecdsa::EcdsaSigner},
     executable::Image,
     fs::{app_home_dir, ensure_dir, hash::hash_path, json::Json},
     hash::blake3::Blake3Hasher,
@@ -23,7 +24,11 @@ use fermah_common::{
     resources::RemoteResource,
     serialization::hash::SerializableHash,
 };
+#[cfg(feature = "send_proof_requests")]
+use fermah_config::profile::NONCE_FILE;
 use fermah_config::profile::{FromProfile, Profile, ProfileType, CONFIG_DIR};
+#[cfg(feature = "send_proof_requests")]
+use fermah_rpc::rpc_client::RpcClientError;
 use fermah_rpc::{rpc_client::RpcClient, RpcConfig};
 use fermah_seek::{
     command::{ClientCommands, ConfigCommands, ImageCommands, ProofCommands},
@@ -32,6 +37,8 @@ use fermah_seek::{
     PROOFS_DIR,
 };
 use fermah_telemetry::{stdout::StdoutTelemetry, Telemetry};
+#[cfg(feature = "send_proof_requests")]
+use tracing::warn;
 use tracing::{error, info};
 use url::Url;
 
@@ -151,20 +158,21 @@ async fn run() -> Result<(), Error> {
             keys.run().await?;
         }
         ClientCommands::Proof { proofs } => {
-            let spinner = Spinner::new(1, "Sending proof request", SpinnerTemplate::Default);
-
-            t.with_spinner_layer(SpinnerLayer::new(
-                StdoutTelemetry::default_fmt_layer(),
-                spinner.clone(),
-            ))
-            .init();
-
             match proofs {
                 ProofCommands::SendProofRequest {
                     profile_key,
                     rpc,
                     key,
                 } => {
+                    let spinner =
+                        Spinner::new(1, "Sending proof request", SpinnerTemplate::Default);
+
+                    t.with_spinner_layer(SpinnerLayer::new(
+                        StdoutTelemetry::default_fmt_layer(),
+                        spinner.clone(),
+                    ))
+                    .init();
+
                     let ecdsa_signer = KeystoreFile::from_config(&key)
                         .await?
                         .to_signer::<EcdsaSigner>()
@@ -190,6 +198,83 @@ async fn run() -> Result<(), Error> {
 
                     print_var("proof_id", proof_request_id.encode_hex_with_prefix());
                 }
+                #[cfg(feature = "send_proof_requests")]
+                ProofCommands::SendProofRequests {
+                    profile_key,
+                    rpc,
+                    key,
+                    nonce: initial_nonce,
+                    pause,
+                } => {
+                    StdoutTelemetry::default().init();
+
+                    let ecdsa_signer = KeystoreFile::from_config(&key)
+                        .await?
+                        .to_signer::<EcdsaSigner>()
+                        .await?;
+
+                    let conn = rpc.unwrap_or_else(|| profile_key.network.to_mm_rpc());
+
+                    let mut rpc = RpcClient::from_config(
+                        RpcConfig { connection: conn },
+                        ecdsa_signer.clone(),
+                    )
+                    .await?;
+
+                    let mut proof_request =
+                        ProofRequest::from_profile(&config_dir, ProfileType::Proof, &profile_key)
+                            .await?;
+
+                    let nonce_file = config_dir
+                        .join(format!("{}net", profile_key.network))
+                        .join(NONCE_FILE);
+
+                    // If `nonce` is not set in the command line, try to read it from the config file`
+                    let initial_nonce = if let Some(nonce) = initial_nonce {
+                        nonce
+                    } else {
+                        read_nonce(&nonce_file).await
+                    };
+                    info!("Sending one proof every every {} ms", pause.as_millis());
+
+                    for nonce in initial_nonce.. {
+                        write_nonce(&nonce_file, nonce + 1).await;
+                        proof_request.nonce = nonce;
+                        let maybe_proof_request_id =
+                            rpc.submit_proof_request(proof_request.clone()).await;
+
+                        match maybe_proof_request_id {
+                            Ok(proof_request_id) => {
+                                info!(id=?proof_request_id.encode_hex_with_prefix(), "Proof request #{nonce} sent!")
+                            }
+                            Err(RpcClientError::Rpc(
+                                jsonrpsee::core::ClientError::RestartNeeded(_),
+                            )) => {
+                                warn!("Disconnected from the matchmaker");
+                                // Reconnect to the matchmaker
+                                loop {
+                                    tokio::time::sleep(pause).await;
+                                    let Ok(maybe_rpc) = RpcClient::from_config(
+                                        RpcConfig { connection: conn },
+                                        ecdsa_signer.clone(),
+                                    )
+                                    .await
+                                    else {
+                                        continue;
+                                    };
+                                    info!("Reconnected to the matchmaker");
+                                    rpc = maybe_rpc;
+                                    break;
+                                }
+                            }
+                            Err(err) => {
+                                error!(?err, "Failed to send proof request over RPC");
+                            }
+                        }
+
+                        tokio::time::sleep(pause).await;
+                    }
+                }
                 ProofCommands::CheckProofRequest {
                     profile_key,
                     rpc,
@@ -197,6 +282,15 @@ async fn run() -> Result<(), Error> {
                     id,
                     out_dir,
                 } => {
+                    let spinner =
+                        Spinner::new(1, "Sending proof request", SpinnerTemplate::Default);
+
+                    t.with_spinner_layer(SpinnerLayer::new(
+                        StdoutTelemetry::default_fmt_layer(),
+                        spinner.clone(),
+                    ))
+                    .init();
+
                     let ecdsa_signer = KeystoreFile::from_config(&key)
                         .await?
                         .to_signer::<EcdsaSigner>()
@@ -388,4 +482,37 @@ async fn download_file(url: &Url, filepath: &Path) -> Result<(), Error> {
         error!("failed when downloading image: {}", e);
     }
     Ok(())
+}
+
+#[cfg(feature = "send_proof_requests")]
+async fn write_nonce(nonce_file: &PathBuf, nonce: u64) {
+    if let Err(err) = tokio::fs::write(nonce_file, nonce.to_ne_bytes()).await {
+        warn!(?err, ?nonce, "failed to update nonce file");
+    }
+}
+
+#[cfg(feature = "send_proof_requests")]
+async fn read_nonce(nonce_file: &PathBuf) -> u64 {
+    let Ok(maybe_nonce) = tokio::fs::read(nonce_file).await else {
+        return <_>::default();
+    };
+
+    u64::from_ne_bytes(maybe_nonce.try_into().unwrap_or_default())
+}
+
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "send_proof_requests")]
+    #[tokio::test]
+    async fn read_write_nonce() {
+        use crate::{read_nonce, write_nonce};
+
+        let nonce = 19;
+        let nonce_file = tempfile::NamedTempFile::new().unwrap().path().to_path_buf();
+        assert_eq!(read_nonce(&nonce_file).await, 0);
+
+        write_nonce(&nonce_file, nonce).await;
+
+        assert_eq!(read_nonce(&nonce_file).await, nonce);
+    }
 }

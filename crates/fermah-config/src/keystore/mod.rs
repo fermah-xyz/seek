@@ -15,6 +15,9 @@ pub struct PasswordArgs {
     /// Do not set a password
     #[arg(long)]
     pub no_password: bool,
+    /// Enable fast cipher mode (!INSECURE!)
+    #[arg(long)]
+    pub fast: bool,
 }
 
 #[derive(Parser, Debug)]
@@ -41,7 +44,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_signer_from_keystore() {
-        let key = "seeker".to_string();
+        let key = "test".to_string();
 
         let mut ksfile = KeystoreFile::from_config(&KeystoreConfig { key })
             .await

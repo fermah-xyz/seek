@@ -9,7 +9,7 @@
         "remoteDocker": [
           {
             "url": "http://localhost:3000/images/jolt_latest.tar.gz",
-            "hash": "0x0a0552b7c915e2a27002be7ae02a5d8dacd71c09136b05efa023efbbc517ff0e"
+            "hash": "0xf5a6673017c695ad6d36bbd65c3f219af5e637e6d67682e52db3911231dbefd4"
           },
           "jolt:latest"
         ]
@@ -33,7 +33,7 @@
         "remoteDocker": [
           {
             "url": "http://localhost:3000/images/jolt_latest.tar.gz",
-            "hash": "0x0a0552b7c915e2a27002be7ae02a5d8dacd71c09136b05efa023efbbc517ff0e"
+            "hash": "0xf5a6673017c695ad6d36bbd65c3f219af5e637e6d67682e52db3911231dbefd4"
           },
           "jolt:latest"
         ]

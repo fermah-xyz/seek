@@ -1,3 +1,6 @@
+#[cfg(feature = "send_proof_requests")]
+use std::time::Duration;
+
 use clap::{Parser, Subcommand};
 use ethers::{prelude::U256, types::Address};
 use fermah_common::{
@@ -92,6 +95,23 @@ pub enum ProofCommands {
         rpc: Option<Connection>,
         #[command(flatten)]
         key: KeystoreConfig,
+    },
+    #[cfg(feature = "send_proof_requests")]
+    /// Send One Proof Request every N seconds
+    SendProofRequests {
+        #[command(flatten)]
+        profile_key: ProfileKey,
+        /// Matchmaker RPC connection
+        #[arg(long, value_parser = Connection::try_from_str)]
+        rpc: Option<Connection>,
+        #[command(flatten)]
+        key: KeystoreConfig,
+        /// Initial nonce value
+        #[arg(long)]
+        nonce: Option<u64>,
+        /// Pause duration between two proof requests (humantime format)
+        #[arg(long, value_parser = humantime::parse_duration, default_value = "30s")]
+        pause: Duration,
     },
     /// Check submitted Proof Request's status
     #[command(alias = "check")]

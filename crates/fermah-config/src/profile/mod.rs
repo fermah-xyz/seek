@@ -17,6 +17,7 @@ pub mod key;
 use crate::{error::Error, profile::key::ProfileKey};
 
 pub const CONFIG_DIR: &str = "config";
+pub const NONCE_FILE: &str = "nonce";
 
 #[derive(
     Serialize, Deserialize, Display, ValueEnum, Default, Debug, Clone, PartialEq, Eq, Hash,

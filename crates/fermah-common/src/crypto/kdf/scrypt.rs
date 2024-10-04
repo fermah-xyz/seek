@@ -6,8 +6,8 @@ use crate::{crypto::kdf::Kdf, serialization::encoding::hex_encoded_no_prefix};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct ScryptKdfParams {
-    /// Log2 of the number of iterations
-    pub n: u8,
+    /// log2(n) of the number of iterations
+    pub n: u32,
     /// Block size
     pub r: u32,
     /// Parallelism
@@ -22,27 +22,28 @@ pub struct ScryptKdfParams {
 impl ScryptKdfParams {
     pub const BLOCK_SIZE: u32 = 8;
 
-    pub const FAST_LOG_N: u8 = 12;
+    pub const FAST_LOG_N: u32 = 4096;
     pub const FAST_PARALLELISM: u32 = 6;
 
-    pub const SECURE_LOG_N: u8 = 18;
+    pub const SECURE_LOG_N: u32 = 262144;
     pub const SECURE_PARALLELISM: u32 = 1;
 }
 
 impl From<ScryptKdfParams> for scrypt::Params {
     fn from(params: ScryptKdfParams) -> Self {
-        scrypt::Params::new(params.n, params.r, params.p, params.dklen).unwrap()
+        scrypt::Params::new(params.n.ilog(2) as u8, params.r, params.p, params.dklen).unwrap()
     }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct ScryptKdf {
+    #[serde(flatten)]
     params: ScryptKdfParams,
 }
 
 impl Default for ScryptKdf {
     fn default() -> Self {
-        Self::fast(&mut OsRng)
+        Self::secure(&mut OsRng)
     }
 }
 

@@ -4,14 +4,13 @@ use clap::Parser;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 use tokio::io;
+use tracing::info;
 use uuid::Uuid;
 use zeroize::ZeroizeOnDrop;
 
 use crate::{
-    cli,
-    cli::spinner::{Spinner, SpinnerTemplate},
     crypto::{
-        cipher::{aes128ctr::Aes128CtrCipher, plain::PlainCipher, Cipher},
+        cipher::{aes128ctr::Aes128CtrCipher, Cipher},
         kdf::scrypt::ScryptKdf,
         signer::Signer,
     },
@@ -39,18 +38,13 @@ pub enum KeystoreFileError {
 
     #[error("aes128ctr cipher error: {0}")]
     Aes128CtrError(#[from] crate::crypto::cipher::aes128ctr::Aes128CtrCipherError),
-
-    #[error("unable to find password in stdin or env var")]
-    Password,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, ZeroizeOnDrop)]
+#[derive(Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
-pub enum KeystoreFile {
-    Plain(KeystoreCipher<PlainCipher>),
-
-    #[zeroize(skip)]
-    Encrypted(KeystoreCipher<Aes128CtrCipher<ScryptKdf>>),
+pub struct KeystoreFile {
+    #[serde(flatten)]
+    pub cipher: KeystoreCipher<Aes128CtrCipher<ScryptKdf>>,
 }
 
 impl KeystoreFile {
@@ -58,21 +52,25 @@ impl KeystoreFile {
         let path = crate::fs::app_home_dir()
             .await?
             .join(KEYS_DIR)
-            .join(format!("{}.json", config.key));
+            .join(format!("{}.key.json", config.key));
         Self::from_json_path(path).await
     }
 
-    pub async fn get_password(name: &str) -> Result<String, KeystoreFileError> {
+    pub async fn get_password() -> Result<String, KeystoreFileError> {
         let password = env::var(KEYSTORE_PASS_ENV).ok();
 
         match password {
             Some(pw_file) => {
+                info!("attempting to read password file in {}", pw_file);
                 let pw = tokio::fs::read_to_string(pw_file).await?;
                 Ok(pw.trim().to_string())
             }
             None => {
-                let password = cli::prompts::prompt_for_password_unlock(name)?;
-                Ok(password.trim().to_string())
+                info!(
+                    "{} not set - unlocking with empty password",
+                    KEYSTORE_PASS_ENV
+                );
+                Ok("".to_string())
             }
         }
     }
@@ -81,18 +79,13 @@ impl KeystoreFile {
     where
         KeystoreFileError: From<<S as Signer>::SignerError>,
     {
-        match self {
-            KeystoreFile::Plain(plain) => Ok(S::from_bytes(plain.crypto.data.as_slice())?),
-            KeystoreFile::Encrypted(ref mut enc) => {
-                let password = Self::get_password(&enc.name).await?;
+        info!("creating signer from keystore");
+        let password = Self::get_password().await?;
 
-                let spinner = Spinner::new(1, "Decrypting", SpinnerTemplate::Default);
-                let decrypted = enc.crypto.decrypt(password.as_bytes())?;
-                spinner.finish("Unlocked keystore!", true);
+        let decrypted = self.cipher.crypto.decrypt(password.as_bytes())?;
 
-                Ok(S::from_bytes(decrypted.data.as_slice())?)
-            }
-        }
+        info!("✓ unlocked keystore");
+        Ok(S::from_bytes(decrypted.data.as_slice())?)
     }
 }
 
@@ -122,19 +115,15 @@ pub struct KeystoreCipher<C: Cipher + ZeroizeOnDrop> {
     pub id: Uuid,
 
     #[zeroize(skip)]
-    pub name: String,
-
-    #[zeroize(skip)]
     pub version: u8,
 }
 
 impl<C: Cipher + ZeroizeOnDrop> KeystoreCipher<C> {
-    pub fn new(crypto: C, address: Vec<u8>, uuid: Uuid, name: String) -> Self {
+    pub fn new(crypto: C, address: Vec<u8>, uuid: Uuid) -> Self {
         Self {
             crypto,
             address,
             id: uuid,
-            name,
             version: 3,
         }
     }
@@ -166,12 +155,7 @@ mod tests {
 
         cipher.encrypt("password".as_bytes()).unwrap();
 
-        let keystore = KeystoreFile::Encrypted(KeystoreCipher::new(
-            cipher,
-            vec![],
-            Uuid::new_v4(),
-            "test".to_string(),
-        ));
+        let keystore = KeystoreCipher::new(cipher, vec![], Uuid::new_v4());
 
         let serialized = serde_json::to_string_pretty(&keystore).unwrap();
 
@@ -179,11 +163,6 @@ mod tests {
 
         let deserialized: KeystoreFile = serde_json::from_str(&serialized).unwrap();
 
-        match (keystore, deserialized) {
-            (KeystoreFile::Encrypted(ref keystore), KeystoreFile::Encrypted(ref deserialized)) => {
-                assert_eq!(keystore.crypto.data, deserialized.crypto.data);
-            }
-            _ => panic!("Keystore types do not match"),
-        }
+        assert_eq!(keystore.crypto.data, deserialized.cipher.crypto.data);
     }
 }

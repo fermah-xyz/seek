@@ -18,8 +18,9 @@ license = "MIT OR Apache-2.0"
 default-run = "seek"
 
 [features]
-default = ["mint_vault_token"]
+default = ["send_proof_requests"]
 mint_vault_token = ["fermah-avs/mock_vault_token"]
+send_proof_requests = []
 
 [[bin]]
 name = "seek"
@@ -46,6 +47,9 @@ tokio = { workspace = true, features = ["macros"] }
 tracing = { workspace = true }
 reqwest = { workspace = true }
 url = { workspace = true }
+tempfile = { workspace = true }
+humantime = "2.1.0"
+jsonrpsee = "0.24.5"
 
 [build-dependencies]
 anyhow = { workspace = true }
