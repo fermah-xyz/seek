@@ -20,13 +20,13 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
-fermah-avs = { path = "crates/fermah-avs", version = "0.1.2" }
-fermah-config = { path = "crates/fermah-config", version = "0.1.2" }
-fermah-common = { path = "crates/fermah-common", version = "0.1.2" }
-fermah-database = { path = "crates/fermah-database", version = "0.1.2" }
-fermah-seek = { path = "crates/fermah-seek", version = "0.1.2" }
-fermah-rpc = { path = "crates/fermah-rpc", version = "0.1.2" }
-fermah-telemetry = { path = "crates/fermah-telemetry", version = "0.1.2" }
+fermah-avs = { path = "crates/fermah-avs", version = "0.1.3" }
+fermah-config = { path = "crates/fermah-config", version = "0.2.0" }
+fermah-common = { path = "crates/fermah-common", version = "0.2.0" }
+fermah-database = { path = "crates/fermah-database", version = "0.1.3" }
+fermah-seek = { path = "crates/fermah-seek", version = "0.2.0" }
+fermah-rpc = { path = "crates/fermah-rpc", version = "0.1.3" }
+fermah-telemetry = { path = "crates/fermah-telemetry", version = "0.1.3" }
 
 # External
 anyhow = { version = "1" }
